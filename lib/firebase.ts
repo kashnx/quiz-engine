@@ -5,14 +5,6 @@ import { getFirestore, type Firestore } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
 // Your web app's Firebase configuration (Hardcoded from user input)
-const firebaseConfig = {
-  apiKey: "AIzaSyCo9SX6quTL1Y49BIXbD0MKHr6ACPYSioU",
-  authDomain: "quizify-b187a.firebaseapp.com",
-  projectId: "quizify-b187a",
-  storageBucket: "quizify-b187a.firebasestorage.app",
-  messagingSenderId: "582962492906",
-  appId: "1:582962492906:web:c4445c229b04538fc12e93"
-};
 
 let app: FirebaseApp;
 
