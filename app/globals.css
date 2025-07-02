@@ -1,0 +1,223 @@
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.65rem; 
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.141 0.005 285.823);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.823);
+  --primary: oklch(0.606 0.25 292.717); 
+  --primary-foreground: oklch(0.969 0.016 293.756);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --accent: oklch(0.967 0.001 286.375);
+  --accent-foreground: oklch(0.21 0.006 285.885);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.606 0.25 292.717);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  --sidebar: oklch(1 0 0); /* White */
+  --sidebar-foreground: oklch(0.51 0.002 280 / 85%); /* Duolingo gray for text (slightly transparent for inactive) */
+  --sidebar-primary: oklch(0.606 0.25 292.717); /* App primary - for Quizify logo */
+  --sidebar-primary-foreground: oklch(0.969 0.016 293.756); /* Contrast for primary */
+  --sidebar-accent: oklch(0.929 0.063 258.05 / 50%); /* Duolingo light blue for active bg (semi-transparent) */
+  --sidebar-accent-foreground: oklch(0.429 0.166 258.94); /* Duolingo darker blue for active text/icon */
+  --sidebar-border: oklch(0.429 0.166 258.94 / 70%); /* Duolingo darker blue for active border (semi-transparent) */
+  --sidebar-ring: oklch(0.529 0.166 258.94); 
+}
+
+.dark {
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.21 0.006 285.885);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.21 0.006 285.885);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.541 0.281 293.009);
+  --primary-foreground: oklch(0.969 0.016 293.756);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --accent: oklch(0.274 0.006 286.033);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.541 0.281 293.009);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+
+  --sidebar: oklch(0.18 0.005 285); 
+  --sidebar-foreground: oklch(0.75 0 0 / 85%); 
+  --sidebar-primary: oklch(0.541 0.281 293.009); 
+  --sidebar-primary-foreground: oklch(0.969 0.016 293.756);
+  --sidebar-accent: oklch(0.28 0.07 258 / 50%); 
+  --sidebar-accent-foreground: oklch(0.80 0.08 258); 
+  --sidebar-border: oklch(0.80 0.08 258 / 70%); 
+  --sidebar-ring: oklch(0.85 0.08 258);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Sidebar hover-to-expand functionality for desktop icon mode */
+  /* Targets the main sidebar element when it's collapsed and in icon mode */
+  [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"] > [data-slot="sidebar-container"] {
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+
+  [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"]:hover > [data-slot="sidebar-container"] {
+    width: var(--sidebar-width) !important; /* Force expand on hover */
+    overflow: visible;
+    box-shadow: theme(boxShadow.xl); /* Add a subtle shadow when expanded */
+  }
+
+  /* Text elements: Menu item titles, User name/email grid */
+  [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"] [data-sidebar="menu-button"] > span:not(:first-child),
+  [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"] [data-sidebar="menu-button"] > div.grid {
+    opacity: 0;
+    max-width: 0;
+    transform: translateX(-15px);
+    transition-property: opacity, max-width, transform;
+    transition-duration: 0.15s;
+    transition-timing-function: cubic-bezier(0.4, 0, 1, 1); /* ease-out */
+    transition-delay: 0s; /* No delay for hiding */
+  }
+
+  [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"]:hover [data-sidebar="menu-button"] > span:not(:first-child),
+  [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"]:hover [data-sidebar="menu-button"] > div.grid {
+    opacity: 1;
+    max-width: 200px; /* or a suitable max width */
+    transform: translateX(0);
+    transition-property: opacity, max-width, transform;
+    transition-duration: 0.2s;
+    transition-timing-function: cubic-bezier(0, 0, 0.2, 1); /* ease-in */
+    transition-delay: 0.1s; /* Delay appearance slightly */
+  }
+  
+  /* Quizify brand name in the sidebar header */
+  [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"] [data-sidebar="header"] .text-2xl {
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transform: translateX(-15px);
+    transition-property: opacity, max-width, transform;
+    transition-duration: 0.15s;
+    transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    transition-delay: 0s;
+  }
+  [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"]:hover [data-sidebar="header"] .text-2xl {
+    opacity: 1;
+    max-width: 200px; 
+    transform: translateX(0);
+    transition-property: opacity, max-width, transform;
+    transition-duration: 0.2s;
+    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    transition-delay: 0.1s;
+  }
+
+  /* Adjustments for menu buttons when in icon-only collapsed state (before hover) */
+   [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"] [data-sidebar="menu-button"] {
+      justify-content: center; 
+      padding-left: theme(spacing.3); 
+      padding-right: theme(spacing.3);
+   }
+   /* When hovered and expanded, revert to default alignment */
+   [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"]:hover [data-sidebar="menu-button"] {
+      justify-content: flex-start; 
+   }
+   /* Ensure icon has no right margin when it's the only thing visible */
+    [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"] [data-sidebar="menu-button"] > svg {
+        margin-right: 0; 
+    }
+    /* Restore icon margin when text appears on hover */
+    [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"]:hover [data-sidebar="menu-button"] > svg {
+        margin-right: theme(spacing.3); 
+    }
+
+  /* Sidebar group labels (if they were used - kept for completeness but not currently used) */
+  [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"] [data-sidebar="group-label"] {
+    opacity: 0;
+    max-height: 0; 
+    overflow: hidden;
+    margin-top: calc(-1 * theme(spacing.8)); 
+    transition: opacity 0.1s ease-out, max-height 0.1s ease-out, margin-top 0.1s ease-out;
+  }
+  [data-slot="sidebar"][data-collapsible="icon"][data-state="collapsed"]:hover [data-sidebar="group-label"] {
+    opacity: 1 !important; 
+    max-height: theme(spacing.8); 
+    margin-top: 0 !important;
+    transition: opacity 0.2s ease-in 0.1s, max-height 0.2s ease-in 0.1s, margin-top 0.2s ease-in 0.1s !important;
+  }
+}
+
+@layer utilities {
+  .glow-text {
+    text-shadow: 0 0 6px rgba(168, 85, 247, 0.7), 0 0 12px rgba(139, 92, 246, 0.6);
+  }
+}
