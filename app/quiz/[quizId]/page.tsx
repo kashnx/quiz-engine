@@ -31,54 +31,62 @@ export default function QuizPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isForeignQuiz, setIsForeignQuiz] = useState(false);
     const [isCloning, startCloningTransition] = useTransition();
+    const [hasError, setHasError] = useState(false);
 
-
+    // Handle auth redirect
     useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
         }
     }, [user, authLoading, router]);
 
+    // Fetch quiz data
     useEffect(() => {
         const currentQuizId = params.quizId;
-        if (currentQuizId) { 
-            const fetchQuiz = async () => {
-                setIsLoadingQuiz(true);
-                setIsForeignQuiz(false); 
-                try {
-                    
-                    const quizDocRef = doc(db, "quizzes", currentQuizId as string); 
-                    const quizDocSnap = await getDoc(quizDocRef);
-
-                    if (quizDocSnap.exists()) {
-                        const fetchedQuizData = { id: quizDocSnap.id, ...quizDocSnap.data(), userId: quizDocSnap.data()?.userId || null } as QuizData;
-                        setQuiz(fetchedQuizData);
-                        setAnswers({}); 
-                        if (user && fetchedQuizData.userId !== user.uid) {
-                            setIsForeignQuiz(true);
-                            console.log("QuizPage: This is a foreign quiz. Owner:", fetchedQuizData.userId, "Current user:", user.uid);
-                        } else if (user && fetchedQuizData.userId === user.uid) {
-                            console.log("QuizPage: This quiz belongs to the current user.");
-                        }
-                    } else {
-                        setQuiz(null);
-                        toast.error("Quiz not found.");
-                    }
-                } catch (error) {
-                    console.error("QuizPage: Error fetching quiz:", error);
-                    toast.error("Failed to load quiz.");
-                    setQuiz(null);
-                }
-                setIsLoadingQuiz(false);
-            };
-            fetchQuiz();
-        } else {
-            setIsLoadingQuiz(false); 
-            setQuiz(null);
-            console.error("QuizPage: quizId is missing from URL params.");
+        
+        if (!currentQuizId || authLoading) {
+            return;
         }
+
+        const fetchQuiz = async () => {
+            setIsLoadingQuiz(true);
+            setHasError(false);
+            setIsForeignQuiz(false);
+            
+            try {
+                const quizDocRef = doc(db, "quizzes", currentQuizId); 
+                const quizDocSnap = await getDoc(quizDocRef);
+
+                if (!quizDocSnap.exists()) {
+                    throw new Error("Quiz not found");
+                }
+
+                const fetchedQuizData = { 
+                    id: quizDocSnap.id, 
+                    ...quizDocSnap.data(), 
+                    userId: quizDocSnap.data()?.userId || null 
+                } as QuizData;
+                
+                setQuiz(fetchedQuizData);
+                setAnswers({});
+
+                if (user && fetchedQuizData.userId !== user.uid) {
+                    setIsForeignQuiz(true);
+                }
+            } catch (error) {
+                console.error("Error fetching quiz:", error);
+                setHasError(true);
+                toast.error(error instanceof Error ? error.message : "Failed to load quiz");
+                setQuiz(null);
+            } finally {
+                setIsLoadingQuiz(false);
+            }
+        };
+
+        fetchQuiz();
     }, [params.quizId, user, authLoading]);
 
+    // Handle quiz submission
     const handleSubmitQuiz = useCallback(async () => {
         if (!quiz || isSubmitting || !user || isForeignQuiz) {
             return;
@@ -113,19 +121,18 @@ export default function QuizPage() {
             toast.success("Quiz submitted! Taking you to results...");
             router.push(`/quiz/${quiz.id}/results/${resultDocRef.id}`);
             submissionSuccessful = true;
-            // Do not set isSubmitting to false here; overlay persists until unmount
         } catch (error) {
-            console.error("QuizPage: Error submitting quiz results:", error);
+            console.error("Error submitting quiz results:", error);
             toast.dismiss("submit-toast");
             toast.error("Failed to submit your results. Please try again.");
-            // Error occurred, isSubmitting will be set to false in finally
         } finally {
             if (!submissionSuccessful) {
-                setIsSubmitting(false); // Only hide overlay if submission failed before navigation
+                setIsSubmitting(false);
             }
         }
     }, [quiz, isSubmitting, user, answers, router, isForeignQuiz]);
 
+    // Timer logic
     useEffect(() => {
         if (!quiz || isLoadingQuiz || isSubmitting || authLoading || !user || isForeignQuiz || isCloning) return;
 
@@ -143,6 +150,7 @@ export default function QuizPage() {
         return () => clearInterval(timer);
     }, [quiz, isLoadingQuiz, isSubmitting, authLoading, user, handleSubmitQuiz, isForeignQuiz, isCloning]);
 
+    // Clone quiz functionality
     const handleCloneAndStartQuiz = async () => {
         if (!user || !quiz || !params.quizId) {
             toast.error("Cannot add quiz. User or quiz data is missing.");
@@ -154,34 +162,29 @@ export default function QuizPage() {
             toast.loading("Adding quiz to your collection...", { id: toastId });
             try {
                 const idToken = await user.getIdToken(true);
-                if (!idToken || typeof idToken !== 'string' || idToken.trim() === '') {
-                    toast.dismiss(toastId);
-                    toast.error("Authentication error: Could not retrieve a valid token. Please sign out and sign in again.");
-                    console.error("handleCloneAndStartQuiz: Failed to get ID token from user or token is invalid/empty.");
-                    return; 
+                if (!idToken) {
+                    throw new Error("Failed to get authentication token");
                 }
 
-                const result = await cloneQuizAction(params.quizId as string, idToken);
+                const result = await cloneQuizAction(params.quizId, idToken);
 
                 if (result.newQuizId) {
                     toast.dismiss(toastId);
                     toast.success(result.message || "Quiz added successfully!");
                     router.push(`/quiz/${result.newQuizId}`);
                 } else {
-                    toast.dismiss(toastId);
-                    toast.error(result.error || "Failed to add quiz to your collection.");
+                    throw new Error(result.error || "Failed to add quiz");
                 }
             } catch (error) {
                 toast.dismiss(toastId);
                 console.error("Error cloning quiz:", error);
-                toast.error("An unexpected error occurred while adding the quiz.");
+                toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
             }
         });
     };
 
-
     const handleAnswerChange = (questionId: string, answerIndex: number) => {
-        setAnswers((prev) => ({ ...prev, [questionId]: answerIndex, }));
+        setAnswers((prev) => ({ ...prev, [questionId]: answerIndex }));
     }
 
     const formatTime = (seconds: number) => {
@@ -190,14 +193,17 @@ export default function QuizPage() {
         return `${mins}:${secs.toString().padStart(2, "0")}`;
     }
 
-    if (authLoading || isLoadingQuiz ) { 
+    // Loading states
+    if (authLoading || (isLoadingQuiz && !hasError)) {
         return (
             <div className="min-h-screen bg-background py-8 flex justify-center items-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
             </div>
         );
     }
-    if (!authLoading && !user && !isLoadingQuiz) {
+
+    // Auth redirect state
+    if (!authLoading && !user) {
          return (
             <div className="min-h-screen bg-background py-8 flex justify-center items-center">
                 <p className="text-muted-foreground">Redirecting to login...</p>
@@ -206,10 +212,10 @@ export default function QuizPage() {
         );
     }
 
-
-    if (!quiz) { 
+    // Error state
+    if (hasError || !quiz) {
         return (
-             <div className="min-h-screen bg-background py-8 flex flex-col justify-center items-center text-center px-4">
+            <div className="min-h-screen bg-background py-8 flex flex-col justify-center items-center text-center px-4">
                 <h2 className="text-2xl font-bold text-foreground mb-4">Quiz Not Found</h2>
                 <p className="text-muted-foreground mb-4">This quiz may not exist or has been removed.</p>
                 <Link href="/my-quizzes">
@@ -219,6 +225,7 @@ export default function QuizPage() {
         );
     }
     
+    // Foreign quiz state
     if (isForeignQuiz && user) {
         return (
             <div className="min-h-screen bg-background py-8 flex flex-col items-center justify-center px-4">
@@ -266,6 +273,7 @@ export default function QuizPage() {
         );
     }
     
+    // Main quiz interface
     const currentQuestionData = quiz.questions[currentQuestionIndex];
     const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
 
@@ -317,12 +325,17 @@ export default function QuizPage() {
                                 <Label 
                                     htmlFor={`option-${currentQuestionData.id}-${index}`} 
                                     key={index}
-                                    className={cn("flex items-center space-x-3 p-4 rounded-lg border border-input hover:bg-accent/50 cursor-pointer transition-colors",
+                                    className={cn(
+                                        "flex items-center space-x-3 p-4 rounded-lg border border-input hover:bg-accent/50 cursor-pointer transition-colors",
                                         answers[currentQuestionData.id] === index ? "bg-primary/10 border-primary ring-2 ring-primary" : "",
                                         (isSubmitting || isCloning) && "cursor-not-allowed opacity-70"
                                     )}
                                 >
-                                    <RadioGroupItem value={index.toString()} id={`option-${currentQuestionData.id}-${index}`} disabled={isSubmitting || isCloning}/>
+                                    <RadioGroupItem 
+                                        value={index.toString()} 
+                                        id={`option-${currentQuestionData.id}-${index}`} 
+                                        disabled={isSubmitting || isCloning}
+                                    />
                                     <span className="flex-1 text-foreground">
                                         {option}
                                     </span>
@@ -343,8 +356,12 @@ export default function QuizPage() {
                     </QuizifyButton>
 
                     {currentQuestionIndex === quiz.questions.length - 1 ? (
-                        <QuizifyButton variant="threed" onClick={handleSubmitQuiz} disabled={isSubmitting || !user || isCloning}>
-                             {isSubmitting ? (
+                        <QuizifyButton 
+                            variant="threed" 
+                            onClick={handleSubmitQuiz} 
+                            disabled={isSubmitting || !user || isCloning}
+                        >
+                            {isSubmitting ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Submitting...
@@ -368,4 +385,3 @@ export default function QuizPage() {
         </div>
     )
 }
-
