@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/auth-context";
 import toast from "react-hot-toast";
 import { cloneQuizAction } from "./actions"; 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { motion } from "framer-motion"
 
 export default function QuizPage() {
     const router = useRouter(); 
@@ -92,7 +93,7 @@ export default function QuizPage() {
             return;
         }
         setIsSubmitting(true);
-        toast.loading("Submitting your answers...", { id: "submit-toast"});
+        toast.loading("PROCESSING RESULTS...", { id: "submit-toast"});
         let submissionSuccessful = false;
 
         try {
@@ -118,13 +119,13 @@ export default function QuizPage() {
 
             const resultDocRef = await addDoc(collection(db, "quizResults"), resultData);
             toast.dismiss("submit-toast");
-            toast.success("Quiz submitted! Taking you to results...");
+            toast.success("RESULTS LOCKED IN!");
             router.push(`/quiz/${quiz.id}/results/${resultDocRef.id}`);
             submissionSuccessful = true;
         } catch (error) {
             console.error("Error submitting quiz results:", error);
             toast.dismiss("submit-toast");
-            toast.error("Failed to submit your results. Please try again.");
+            toast.error("SUBMISSION FAILED. TRY AGAIN.");
         } finally {
             if (!submissionSuccessful) {
                 setIsSubmitting(false);
@@ -153,32 +154,32 @@ export default function QuizPage() {
     // Clone quiz functionality
     const handleCloneAndStartQuiz = async () => {
         if (!user || !quiz || !params.quizId) {
-            toast.error("Cannot add quiz. User or quiz data is missing.");
+            toast.error("AUTHENTICATION FAILURE");
             return;
         }
         
         startCloningTransition(async () => {
             const toastId = "cloning-toast";
-            toast.loading("Adding quiz to your collection...", { id: toastId });
+            toast.loading("CLONING QUIZ DATA...", { id: toastId });
             try {
                 const idToken = await user.getIdToken(true);
                 if (!idToken) {
-                    throw new Error("Failed to get authentication token");
+                    throw new Error("AUTH TOKEN INVALID");
                 }
 
                 const result = await cloneQuizAction(params.quizId, idToken);
 
                 if (result.newQuizId) {
                     toast.dismiss(toastId);
-                    toast.success(result.message || "Quiz added successfully!");
+                    toast.success("QUIZ CLONED SUCCESSFULLY!");
                     router.push(`/quiz/${result.newQuizId}`);
                 } else {
-                    throw new Error(result.error || "Failed to add quiz");
+                    throw new Error(result.error || "CLONING FAILED");
                 }
             } catch (error) {
                 toast.dismiss(toastId);
                 console.error("Error cloning quiz:", error);
-                toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
+                toast.error(error instanceof Error ? error.message.toUpperCase() : "SYSTEM ERROR");
             }
         });
     };
@@ -196,8 +197,8 @@ export default function QuizPage() {
     // Loading states
     if (authLoading || (isLoadingQuiz && !hasError)) {
         return (
-            <div className="min-h-screen bg-background py-8 flex justify-center items-center">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <div className="min-h-screen bg-black flex justify-center items-center">
+                <Loader2 className="h-12 w-12 animate-spin text-[#00f0ff]" />
             </div>
         );
     }
@@ -205,9 +206,9 @@ export default function QuizPage() {
     // Auth redirect state
     if (!authLoading && !user) {
          return (
-            <div className="min-h-screen bg-background py-8 flex justify-center items-center">
-                <p className="text-muted-foreground">Redirecting to login...</p>
-                <Loader2 className="ml-2 h-6 w-6 animate-spin text-primary" />
+            <div className="min-h-screen bg-black flex justify-center items-center">
+                <p className="text-gray-400 font-mono">AUTHENTICATING...</p>
+                <Loader2 className="ml-2 h-6 w-6 animate-spin text-[#00f0ff]" />
             </div>
         );
     }
@@ -215,11 +216,13 @@ export default function QuizPage() {
     // Error state
     if (hasError || !quiz) {
         return (
-            <div className="min-h-screen bg-background py-8 flex flex-col justify-center items-center text-center px-4">
-                <h2 className="text-2xl font-bold text-foreground mb-4">Quiz Not Found</h2>
-                <p className="text-muted-foreground mb-4">This quiz may not exist or has been removed.</p>
+            <div className="min-h-screen bg-black flex flex-col justify-center items-center text-center px-4">
+                <h2 className="text-2xl font-black uppercase tracking-wider text-[#ff4d00] mb-4">QUIZ NOT FOUND</h2>
+                <p className="text-gray-400 font-mono mb-4">DATA CORRUPTED OR DELETED</p>
                 <Link href="/my-quizzes">
-                    <QuizifyButton variant="threed">Go to My Quizzes</QuizifyButton>
+                    <QuizifyButton variant="threed" className="bg-[#00f0ff] border-[#00f0ff] text-black hover:bg-black hover:text-[#00f0ff]">
+                        RETURN TO SAFETY
+                    </QuizifyButton>
                 </Link>
             </div>
         );
@@ -228,21 +231,25 @@ export default function QuizPage() {
     // Foreign quiz state
     if (isForeignQuiz && user) {
         return (
-            <div className="min-h-screen bg-background py-8 flex flex-col items-center justify-center px-4">
-                <Card className="max-w-xl w-full shadow-2xl rounded-lg">
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="min-h-screen bg-black flex flex-col items-center justify-center px-4"
+            >
+                <Card className="max-w-xl w-full shadow-2xl rounded-lg border-4 border-[#00f0ff] bg-[#0a0a0a]">
                     <CardHeader className="text-center p-6 sm:p-8">
-                        <Users className="h-16 w-16 text-primary mx-auto mb-4" />
-                        <CardTitle className="text-3xl font-bold text-foreground mb-2">{quiz.title}</CardTitle>
-                        <CardDescription className="text-lg text-muted-foreground max-w-md mx-auto">
-                            {quiz.description || `A quiz with ${quiz.questionCount} questions.`}
+                        <Users className="h-16 w-16 text-[#ff4d00] mx-auto mb-4" />
+                        <CardTitle className="text-3xl font-black uppercase tracking-wider text-[#00f0ff] mb-2">{quiz.title}</CardTitle>
+                        <CardDescription className="text-lg text-gray-400 font-mono max-w-md mx-auto">
+                            {quiz.description || `// ${quiz.questionCount} QUESTIONS READY //`}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 sm:p-8 space-y-6">
-                        <Alert className="bg-accent/50 border-primary/30">
-                            <Users className="h-5 w-5 text-primary" />
-                            <AlertTitle className="font-semibold text-primary">Shared Quiz</AlertTitle>
-                            <AlertDescription className="text-muted-foreground">
-                                This quiz was shared by another user. Add it to your collection to take it and track your results.
+                        <Alert className="bg-[#0a1a1a] border-2 border-[#00f0ff]">
+                            <Users className="h-5 w-5 text-[#00f0ff]" />
+                            <AlertTitle className="font-black uppercase tracking-wider text-[#00f0ff]">SECURE ACCESS REQUIRED</AlertTitle>
+                            <AlertDescription className="text-gray-400 font-mono">
+                                // FOREIGN QUIZ DETECTED // CLONE TO LOCAL STORAGE //
                             </AlertDescription>
                         </Alert>
                         <div className="flex flex-col space-y-4">
@@ -251,25 +258,29 @@ export default function QuizPage() {
                                 size="lg"
                                 onClick={handleCloneAndStartQuiz}
                                 disabled={isCloning}
-                                className="w-full py-3 text-lg"
+                                className="w-full py-3 text-lg bg-[#ff4d00] border-[#ff4d00] text-black hover:bg-black hover:text-[#ff4d00]"
                             >
                                 {isCloning ? (
                                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                 ) : (
                                     <CopyPlus className="mr-2 h-5 w-5" />
                                 )}
-                                {isCloning ? "Adding to Collection..." : "Add to My Quizzes & Start"}
+                                {isCloning ? "CLONING..." : "ACQUIRE & LAUNCH"}
                             </QuizifyButton>
                             <Link href="/my-quizzes" className="w-full">
-                                 <QuizifyButton variant="outlined" size="lg" className="w-full py-3 text-lg">
+                                 <QuizifyButton 
+                                    variant="threed" 
+                                    size="lg" 
+                                    className="w-full py-3 text-lg bg-[#00f0ff] border-[#00f0ff] text-black hover:bg-black hover:text-[#00f0ff]"
+                                >
                                     <ChevronLeft className="mr-2 h-5 w-5" />
-                                    Back to My Quizzes
+                                    ABORT MISSION
                                 </QuizifyButton>
                             </Link>
                         </div>
                     </CardContent>
                 </Card>
-            </div>
+            </motion.div>
         );
     }
     
@@ -278,15 +289,15 @@ export default function QuizPage() {
     const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
 
     return (
-        <div className="min-h-screen bg-background py-8">
+        <div className="min-h-screen bg-black py-8">
             {(isSubmitting || isCloning) && (
-                <div className="fixed inset-0 bg-background/90 backdrop-blur-md flex flex-col justify-center items-center z-[100] p-4 text-center">
-                    <Loader2 className="h-16 w-16 animate-spin text-primary mb-6" />
-                    <h2 className="text-2xl font-semibold text-foreground mb-2">
-                        {isSubmitting ? "Finalizing Your Quiz" : "Preparing Quiz..."}
+                <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex flex-col justify-center items-center z-[100] p-4 text-center">
+                    <Loader2 className="h-16 w-16 animate-spin text-[#00f0ff] mb-6" />
+                    <h2 className="text-2xl font-black uppercase tracking-wider text-[#ff4d00] mb-2">
+                        {isSubmitting ? "PROCESSING RESULTS" : "INITIALIZING QUIZ"}
                     </h2>
-                    <p className="text-lg text-muted-foreground">
-                        {isSubmitting ? "Calculating score and preparing results..." : "Please wait..."}
+                    <p className="text-lg text-gray-400 font-mono">
+                        {isSubmitting ? "// ANALYZING PERFORMANCE //" : "// PREPARING ENVIRONMENT //"}
                     </p>
                 </div>
             )}
@@ -295,64 +306,92 @@ export default function QuizPage() {
                 "max-w-4xl mx-auto px-4 transition-all duration-300",
                 (isSubmitting || isCloning) ? 'blur-md pointer-events-none opacity-50' : 'blur-none opacity-100'
             )}>
-                <div className="mb-8">
+                <motion.div 
+                    initial={{ y: -20 }}
+                    animate={{ y: 0 }}
+                    className="mb-8 border-b-4 border-[#ff4d00] pb-6"
+                >
                     <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-2xl font-bold text-foreground">{quiz.title}</h1>
-                        <div className="flex items-center space-x-2 text-lg font-medium text-muted-foreground">
-                            <Clock className="h-5 w-5 text-primary"/>
-                            <span className={timeLeft < 300 ? "text-destructive" : ""}>{formatTime(timeLeft)}</span>
+                        <h1 className="text-2xl font-black uppercase tracking-wider bg-gradient-to-r from-[#00f0ff] to-[#ff00ff] bg-clip-text text-transparent">
+                            {quiz.title}
+                        </h1>
+                        <div className="flex items-center space-x-2 text-lg font-mono text-gray-400">
+                            <Clock className="h-5 w-5 text-[#ff4d00]"/>
+                            <span className={timeLeft < 300 ? "text-[#ff4d00]" : ""}>{formatTime(timeLeft)}</span>
                         </div>
                     </div>
-                    <Progress value={progress} className="w-full h-2.5"/>
-                    <p className="text-sm text-muted-foreground mt-2">
-                        Question {currentQuestionIndex + 1} of {quiz.questions.length}
+                    <Progress 
+                        value={progress} 
+                        className="w-full h-2.5 bg-black border-2 border-[#00f0ff]"
+                        indicatorClassName="bg-[#ff4d00]"
+                    />
+                    <p className="text-sm text-gray-400 font-mono mt-2">
+                        // QUESTION {currentQuestionIndex + 1} OF {quiz.questions.length} //
                     </p>
-                </div>
+                </motion.div>
 
-                <Card className="mb-8 bg-card">
-                    <CardHeader>
-                        <CardTitle className="text-xl text-card-foreground">{currentQuestionData.questionText}</CardTitle>
-                        <CardDescription>Select the best answer from the options below.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <RadioGroup
-                            value={answers[currentQuestionData.id]?.toString() ?? ""}
-                            onValueChange={(value) => handleAnswerChange(currentQuestionData.id, Number.parseInt(value))}
-                            className="space-y-3"
-                            disabled={isSubmitting || isCloning}
-                        >
-                            {currentQuestionData.options.map((option, index) => (
-                                <Label 
-                                    htmlFor={`option-${currentQuestionData.id}-${index}`} 
-                                    key={index}
-                                    className={cn(
-                                        "flex items-center space-x-3 p-4 rounded-lg border border-input hover:bg-accent/50 cursor-pointer transition-colors",
-                                        answers[currentQuestionData.id] === index ? "bg-primary/10 border-primary ring-2 ring-primary" : "",
-                                        (isSubmitting || isCloning) && "cursor-not-allowed opacity-70"
-                                    )}
-                                >
-                                    <RadioGroupItem 
-                                        value={index.toString()} 
-                                        id={`option-${currentQuestionData.id}-${index}`} 
-                                        disabled={isSubmitting || isCloning}
-                                    />
-                                    <span className="flex-1 text-foreground">
-                                        {option}
-                                    </span>
-                                </Label>
-                            ))}
-                        </RadioGroup>
-                    </CardContent>
-                </Card>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                >
+                    <Card className="mb-8 bg-[#0a0a0a] border-4 border-[#00f0ff] shadow-lg shadow-[#00f0ff]/10">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-mono text-[#00f0ff]">
+                                <span className="text-[#ffcc00]">Q{currentQuestionIndex + 1}:</span> {currentQuestionData.questionText}
+                            </CardTitle>
+                            <CardDescription className="text-gray-400 font-mono">
+                                // SELECT CORRECT RESPONSE //
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <RadioGroup
+                                value={answers[currentQuestionData.id]?.toString() ?? ""}
+                                onValueChange={(value) => handleAnswerChange(currentQuestionData.id, Number.parseInt(value))}
+                                className="space-y-3"
+                                disabled={isSubmitting || isCloning}
+                            >
+                                {currentQuestionData.options.map((option, index) => (
+                                    <Label 
+                                        htmlFor={`option-${currentQuestionData.id}-${index}`} 
+                                        key={index}
+                                        className={cn(
+                                            "flex items-center space-x-3 p-4 rounded-lg border-2 font-mono transition-colors",
+                                            answers[currentQuestionData.id] === index 
+                                                ? "bg-[#00f0ff]/10 border-[#00f0ff] ring-2 ring-[#00f0ff] text-[#00f0ff]" 
+                                                : "bg-[#1a1a1a] border-[#333] text-gray-400 hover:bg-[#222]",
+                                            (isSubmitting || isCloning) && "cursor-not-allowed opacity-70"
+                                        )}
+                                    >
+                                        <RadioGroupItem 
+                                            value={index.toString()} 
+                                            id={`option-${currentQuestionData.id}-${index}`} 
+                                            disabled={isSubmitting || isCloning}
+                                            className="border-2 border-[#00f0ff] data-[state=checked]:bg-[#ff4d00]"
+                                        />
+                                        <span className="flex-1">
+                                            {option}
+                                        </span>
+                                    </Label>
+                                ))}
+                            </RadioGroup>
+                        </CardContent>
+                    </Card>
+                </motion.div>
 
-                <div className="flex justify-between">
+                <motion.div 
+                    className="flex justify-between"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                >
                     <QuizifyButton
                         variant="threed"
                         onClick={() => setCurrentQuestionIndex((prev) => Math.max(0, prev - 1))}
                         disabled={currentQuestionIndex === 0 || isSubmitting || isCloning}
+                        className="bg-[#00f0ff] border-[#00f0ff] text-black hover:bg-black hover:text-[#00f0ff]"
                     >
                         <ChevronLeft className="mr-2 h-4 w-4"/>
-                        Previous
+                        PREVIOUS
                     </QuizifyButton>
 
                     {currentQuestionIndex === quiz.questions.length - 1 ? (
@@ -360,14 +399,15 @@ export default function QuizPage() {
                             variant="threed" 
                             onClick={handleSubmitQuiz} 
                             disabled={isSubmitting || !user || isCloning}
+                            className="bg-[#ff4d00] border-[#ff4d00] text-black hover:bg-black hover:text-[#ff4d00]"
                         >
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Submitting...
+                                    PROCESSING...
                                 </>
                             ) : (
-                                "Submit Quiz"
+                                "TERMINATE QUIZ"
                             )}
                         </QuizifyButton>
                     ) : (
@@ -375,12 +415,13 @@ export default function QuizPage() {
                             variant="threed"
                             onClick={() => setCurrentQuestionIndex((prev) => Math.min(quiz.questions.length - 1, prev + 1))}
                             disabled={isSubmitting || isCloning}
+                            className="bg-[#ff00ff] border-[#ff00ff] text-black hover:bg-black hover:text-[#ff00ff]"
                         >
-                            Next
+                            NEXT
                             <ChevronRight className="ml-2 h-4 w-4"/>
                         </QuizifyButton>
                     )}
-                </div>
+                </motion.div>
             </div>
         </div>
     )
