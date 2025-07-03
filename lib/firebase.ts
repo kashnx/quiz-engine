@@ -6,12 +6,13 @@ import { v4 as uuidv4 } from "uuid";
 
 // Your web app's Firebase configuration (Hardcoded from user input)
 const firebaseConfig = {
-  apiKey: "AIzaSyCo9SX6quTL1Y49BIXbD0MKHr6ACPYSioU",
-  authDomain: "quizify-b187a.firebaseapp.com",
-  projectId: "quizify-b187a",
-  storageBucket: "quizify-b187a.firebasestorage.app",
-  messagingSenderId: "582962492906",
-  appId: "1:582962492906:web:c4445c229b04538fc12e93"
+  apiKey: "AIzaSyDiWA9oF1gmTHqP9hDRibv0euFF--g-mxM",
+  authDomain: "quizengine-1b645.firebaseapp.com",
+  projectId: "quizengine-1b645",
+  storageBucket: "quizengine-1b645.firebasestorage.app",
+  messagingSenderId: "185943714218",
+  appId: "1:185943714218:web:971f80a42e0ae3f61ae3d3",
+  // measurementId: "G-VMVJFPZT8W"
 };
 
 let app: FirebaseApp;

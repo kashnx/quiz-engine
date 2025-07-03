@@ -16,6 +16,11 @@ import { useAuth } from "@/contexts/auth-context";
 import { motion } from "framer-motion"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import type { VariantProps } from "class-variance-authority"
+import { badgeVariants } from "@/components/ui/badge"
+
+type BadgeVariant = VariantProps<typeof badgeVariants>["variant"]
+
 
 interface StoredQuizResults {
   id: string; 
@@ -79,12 +84,15 @@ export default function QuizResultsPage() {
     return "text-[#ff4d00]"
   }
   
-  const getScoreBadgeInfo = (score: number) => {
-    if (score >= 90) return { text: "EXCELLENT!", variant: "default", className: "bg-[#00f0ff] hover:bg-[#00c0ff] text-black" }
-    if (score >= 80) return { text: "GREAT JOB!", variant: "default", className: "bg-[#00a0ff] hover:bg-[#0080ff] text-black" }
-    if (score >= 60) return { text: "GOOD EFFORT", variant: "default", className: "bg-[#ffcc00] hover:bg-[#ffaa00] text-black" }
-    return { text: "NEEDS WORK", variant: "destructive", className: "bg-[#ff4d00] hover:bg-[#ff3300] text-black" }
-  }
+const getScoreBadgeInfo = (
+  score: number
+): { text: string; variant: BadgeVariant; className: string } => {
+  if (score >= 90) return { text: "EXCELLENT!", variant: "default", className: "bg-[#00f0ff] hover:bg-[#00c0ff] text-black" };
+  if (score >= 80) return { text: "GREAT JOB!", variant: "default", className: "bg-[#00a0ff] hover:bg-[#0080ff] text-black" };
+  if (score >= 60) return { text: "GOOD EFFORT", variant: "default", className: "bg-[#ffcc00] hover:bg-[#ffaa00] text-black" };
+  return { text: "NEEDS WORK", variant: "destructive", className: "bg-[#ff4d00] hover:bg-[#ff3300] text-black" };
+}
+
 
   const handleShareResults = async () => {
     try {
