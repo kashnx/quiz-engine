@@ -6,14 +6,15 @@ import { v4 as uuidv4 } from "uuid";
 
 // Your web app's Firebase configuration (Hardcoded from user input)
 const firebaseConfig = {
-  apiKey: "AIzaSyDiWA9oF1gmTHqP9hDRibv0euFF--g-mxM",
-  authDomain: "quizengine-1b645.firebaseapp.com",
-  projectId: "quizengine-1b645",
-  storageBucket: "quizengine-1b645.firebasestorage.app",
-  messagingSenderId: "185943714218",
-  appId: "1:185943714218:web:971f80a42e0ae3f61ae3d3",
-  // measurementId: "G-VMVJFPZT8W"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
 };
+
+
 
 let app: FirebaseApp;
 
